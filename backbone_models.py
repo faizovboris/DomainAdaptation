@@ -1,0 +1,97 @@
+import torch.nn as nn
+
+import dann_config
+
+
+def get_backbone_model():
+    """
+    Return:
+        features (nn.Module) - convolutional model part for feature extracting
+        pooling (nn.Module) - model pooling layers
+        classifier (nn.Module) - model fully connected layers
+        pooling_ftrs (int) - number of activations at the output of "pooling"
+        pooling_output_side (int) - side of feature map at the output of "pooling"
+        layers (list of nn.Module) - model splitted in parts
+
+    Returns three parts of model — the convolutional part to extract features,
+    part with pooling and part with fully connected model layers.
+    Can return these parts with pre-trained weights for standard architecture.
+    """
+    if dann_config.model_backbone == "alexnet":
+        features, pooling, classifier, pooling_ftrs, pooling_output_side = get_alexnet()
+    elif dann_config.model_backbone == "resnet50":
+        features, pooling, classifier, pooling_ftrs, pooling_output_side = get_resnet50()
+    elif dann_config.model_backbone == 'vanilla_dann' and dann_config.backbone_pretrained == False:
+        features, pooling, classifier, pooling_ftrs, pooling_output_side = get_vanilla_dann()        
+    else:
+        raise RuntimeError("model %s with pretrained = %s, does not exist" \
+            % (dann_config.model_backbone, dann_config.backbone_pretrained))
+
+    if dann_config.loss_need_intermediate_layers:
+        classifier = nn.ModuleList(parse_layers(classifier, classifier_layer_ids))
+    else:
+        classifier = nn.ModuleList([classifier])
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side
+
+
+def get_alexnet():
+    from torchvision.models import alexnet
+    model = alexnet(pretrained=dann_config.backbone_pretrained)
+    features, pooling, classifier = model.features, model.avgpool, model.classifier
+    classifier[-1] = nn.Linear(4096, dann_config.classes_cnt)
+    classifier_layer_ids = [1, 4, 6]
+    pooling_ftrs = 256
+    pooling_output_side = 6
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side
+
+
+def get_resnet50():
+    from torchvision.models import resnet50
+    model = resnet50(pretrained=dann_config.backbone_pretrained)
+    features = nn.Sequential(
+        model.conv1,
+        model.bn1,
+        model.relu,
+        model.maxpool,
+        model.layer1,
+        model.layer2,
+        model.layer3,
+        model.layer4,
+    )
+    pooling = model.avgpool
+    classifier = nn.Sequential(nn.Linear(2048, dann_config.classes_cnt))
+    classifier_layer_ids = [0]
+    pooling_ftrs = 2048
+    pooling_output_side = 1
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side
+
+
+def get_vanilla_dann():
+    hidden_size = 64
+    pooling_output_side = (dann_config.image_side - 12) // 4
+
+    features = nn.Sequential(
+        nn.Conv2d(3, hidden_size, kernel_size=5),
+        nn.BatchNorm2d(hidden_size),
+        nn.MaxPool2d(2),
+        nn.ReLU(),
+        nn.Conv2d(hidden_size, hidden_size, kernel_size=5),
+        nn.BatchNorm2d(hidden_size),
+        nn.Dropout2d(),
+        nn.MaxPool2d(2),
+        nn.ReLU(),
+    )
+    pooling = nn.Sequential()
+    classifier = nn.Sequential(
+        nn.Linear(hidden_size * pooling_output_side * pooling_output_side, hidden_size * 2),
+        nn.BatchNorm1d(hidden_size * 2),
+        nn.Dropout2d(),
+        nn.ReLU(),
+        nn.Linear(hidden_size * 2, hidden_size * 2),
+        nn.BatchNorm1d(hidden_size * 2),
+        nn.ReLU(),
+        nn.Linear(hidden_size * 2, dann_config.classes_cnt),
+    )
+    classifier_layer_ids = [0, 4, 7]
+    pooling_ftrs = hidden_size
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side
