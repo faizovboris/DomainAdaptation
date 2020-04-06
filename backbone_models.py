@@ -3,6 +3,32 @@ import torch.nn as nn
 import dann_config
 
 
+def parse_layers(model, layer_ids):
+    """
+    Args:
+        model (nn.Module) - nn.Sequential model
+        layer_ids (list of int) - required model outputs
+    Return:
+        layers (list of nn.Module)- model splitted in parts
+
+    Function for splitting nn.Sequential model in separate
+    layers, which indexed by numbers from the list layer_ids.
+    It will be required to obtain activations of intermediate model layers
+    and calculate loss function between intermediate layers
+    """
+    separate_layers = list(model)
+    layers = []
+    for i in range(len(layer_ids)):
+        if i == 0:
+            start_layer = 0
+        else:
+            start_layer = layer_ids[i - 1] + 1
+        layers.append(nn.Sequential(*separate_layers[start_layer:layer_ids[i] + 1]))
+    if len(separate_layers) > layer_ids[-1] + 1:
+        layers.append(nn.Sequential(*separate_layers[layer_ids[-1] + 1:]))        
+    return layers
+
+
 def get_backbone_model():
     """
     Return:
@@ -18,11 +44,14 @@ def get_backbone_model():
     Can return these parts with pre-trained weights for standard architecture.
     """
     if dann_config.model_backbone == "alexnet":
-        features, pooling, classifier, pooling_ftrs, pooling_output_side = get_alexnet()
+        features, pooling, classifier, pooling_ftrs, \
+            pooling_output_side, classifier_layer_ids = get_alexnet()
     elif dann_config.model_backbone == "resnet50":
-        features, pooling, classifier, pooling_ftrs, pooling_output_side = get_resnet50()
+        features, pooling, classifier, pooling_ftrs, \
+            pooling_output_side, classifier_layer_ids = get_resnet50()
     elif dann_config.model_backbone == 'vanilla_dann' and dann_config.backbone_pretrained == False:
-        features, pooling, classifier, pooling_ftrs, pooling_output_side = get_vanilla_dann()        
+        features, pooling, classifier, pooling_ftrs, \
+            pooling_output_side, classifier_layer_ids = get_vanilla_dann()        
     else:
         raise RuntimeError("model %s with pretrained = %s, does not exist" \
             % (dann_config.model_backbone, dann_config.backbone_pretrained))
@@ -42,7 +71,7 @@ def get_alexnet():
     classifier_layer_ids = [1, 4, 6]
     pooling_ftrs = 256
     pooling_output_side = 6
-    return features, pooling, classifier, pooling_ftrs, pooling_output_side
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side, classifier_layer_ids
 
 
 def get_resnet50():
@@ -63,7 +92,7 @@ def get_resnet50():
     classifier_layer_ids = [0]
     pooling_ftrs = 2048
     pooling_output_side = 1
-    return features, pooling, classifier, pooling_ftrs, pooling_output_side
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side, classifier_layer_ids
 
 
 def get_vanilla_dann():
@@ -94,4 +123,4 @@ def get_vanilla_dann():
     )
     classifier_layer_ids = [0, 4, 7]
     pooling_ftrs = hidden_size
-    return features, pooling, classifier, pooling_ftrs, pooling_output_side
+    return features, pooling, classifier, pooling_ftrs, pooling_output_side, classifier_layer_ids
