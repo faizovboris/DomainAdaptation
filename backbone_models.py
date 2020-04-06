@@ -3,7 +3,7 @@ import torch.nn as nn
 import dann_config
 
 
-def parse_layers(model, layer_ids):
+def split_layers(model, layer_ids):
     """
     Args:
         model (nn.Module) - nn.Sequential model
@@ -57,7 +57,7 @@ def get_backbone_model():
             % (dann_config.model_backbone, dann_config.backbone_pretrained))
 
     if dann_config.loss_need_intermediate_layers:
-        classifier = nn.ModuleList(parse_layers(classifier, classifier_layer_ids))
+        classifier = nn.ModuleList(split_layers(classifier, classifier_layer_ids))
     else:
         classifier = nn.ModuleList([classifier])
     return features, pooling, classifier, pooling_ftrs, pooling_output_side
