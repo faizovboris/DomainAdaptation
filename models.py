@@ -42,14 +42,14 @@ class DANNModel(BaseModel):
             output_classifier = block(output_classifier)
             classifier_layers_outputs.append(output_classifier)
         
-        reversed_features = GradientReversalLayer.apply(features, dann_config.gradient_reversal_layer_alpha)
+        reversed_features = GradientReversalLayer.apply(features, dann_config.GRADIENT_REVERSAL_LAYER_ALPHA)
         output_domain = self.domain_classifier(reversed_features)
         
         output = {
             "class": output_classifier,
             "domain": output_domain,
         }
-        if dann_config.loss_need_intermediate_layers:
+        if dann_config.LOSS_NEED_INTERMEDIATE_LAYERS:
             output["classifier_layers"] = classifier_layers_outputs
 
         return output

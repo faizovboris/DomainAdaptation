@@ -1,6 +1,6 @@
-loss_need_intermediate_layers = False
-classes_cnt = 31
-model_backbone = "alexnet" # alexnet resnet50 vanilla_dann
-backbone_pretrained = True
-gradient_reversal_layer_alpha = 1.0
-image_side = 256
+LOSS_NEED_INTERMEDIATE_LAYERS = False
+CLASSES_CNT = 31
+MODEL_BACKBONE = "alexnet" # alexnet resnet50 vanilla_dann
+BACKBONE_PRETRAINED = True
+GRADIENT_REVERSAL_LAYER_ALPHA = 1.0
+IMAGE_SIDE = 256

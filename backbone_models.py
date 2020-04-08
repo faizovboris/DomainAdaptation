@@ -43,20 +43,20 @@ def get_backbone_model():
     part with pooling and part with fully connected model layers.
     Can return these parts with pre-trained weights for standard architecture.
     """
-    if dann_config.model_backbone == "alexnet":
+    if dann_config.MODEL_BACKBONE == "alexnet":
         features, pooling, classifier, pooling_ftrs, \
             pooling_output_side, classifier_layer_ids = get_alexnet()
-    elif dann_config.model_backbone == "resnet50":
+    elif dann_config.MODEL_BACKBONE == "resnet50":
         features, pooling, classifier, pooling_ftrs, \
             pooling_output_side, classifier_layer_ids = get_resnet50()
-    elif dann_config.model_backbone == 'vanilla_dann' and dann_config.backbone_pretrained == False:
+    elif dann_config.MODEL_BACKBONE == 'vanilla_dann' and dann_config.BACKBONE_PRETRAINED == False:
         features, pooling, classifier, pooling_ftrs, \
             pooling_output_side, classifier_layer_ids = get_vanilla_dann()        
     else:
         raise RuntimeError("model %s with pretrained = %s, does not exist" \
-            % (dann_config.model_backbone, dann_config.backbone_pretrained))
+            % (dann_config.MODEL_BACKBONE, dann_config.BACKBONE_PRETRAINED))
 
-    if dann_config.loss_need_intermediate_layers:
+    if dann_config.LOSS_NEED_INTERMEDIATE_LAYERS:
         classifier = nn.ModuleList(split_layers(classifier, classifier_layer_ids))
     else:
         classifier = nn.ModuleList([classifier])
@@ -65,9 +65,9 @@ def get_backbone_model():
 
 def get_alexnet():
     from torchvision.models import alexnet
-    model = alexnet(pretrained=dann_config.backbone_pretrained)
+    model = alexnet(pretrained=dann_config.BACKBONE_PRETRAINED)
     features, pooling, classifier = model.features, model.avgpool, model.classifier
-    classifier[-1] = nn.Linear(4096, dann_config.classes_cnt)
+    classifier[-1] = nn.Linear(4096, dann_config.CLASSES_CNT)
     classifier_layer_ids = [1, 4, 6]
     pooling_ftrs = 256
     pooling_output_side = 6
@@ -76,7 +76,7 @@ def get_alexnet():
 
 def get_resnet50():
     from torchvision.models import resnet50
-    model = resnet50(pretrained=dann_config.backbone_pretrained)
+    model = resnet50(pretrained=dann_config.BACKBONE_PRETRAINED)
     features = nn.Sequential(
         model.conv1,
         model.bn1,
@@ -88,7 +88,7 @@ def get_resnet50():
         model.layer4,
     )
     pooling = model.avgpool
-    classifier = nn.Sequential(nn.Linear(2048, dann_config.classes_cnt))
+    classifier = nn.Sequential(nn.Linear(2048, dann_config.CLASSES_CNT))
     classifier_layer_ids = [0]
     pooling_ftrs = 2048
     pooling_output_side = 1
@@ -97,7 +97,7 @@ def get_resnet50():
 
 def get_vanilla_dann():
     hidden_size = 64
-    pooling_output_side = (dann_config.image_side - 12) // 4
+    pooling_output_side = (dann_config.IMAGE_SIDE - 12) // 4
 
     features = nn.Sequential(
         nn.Conv2d(3, hidden_size, kernel_size=5),
@@ -119,7 +119,7 @@ def get_vanilla_dann():
         nn.Linear(hidden_size * 2, hidden_size * 2),
         nn.BatchNorm1d(hidden_size * 2),
         nn.ReLU(),
-        nn.Linear(hidden_size * 2, dann_config.classes_cnt),
+        nn.Linear(hidden_size * 2, dann_config.CLASSES_CNT),
     )
     classifier_layer_ids = [0, 4, 7]
     pooling_ftrs = hidden_size
