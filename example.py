@@ -11,7 +11,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def only_loss(*args, **kwargs):
     loss, rich_loss = loss_DANN(device=device, *args, **kwargs)
-    print(f"loss: {rich_loss}")
+    loss_string = '   '.join(['val_src_{}: {:.5f}\t'.format(k, float(v)) for k, v in rich_loss.items()])
+    print(f"step_loss: {loss_string}")
     return loss
 
 
