@@ -48,7 +48,6 @@ class DANNModel(BaseModel):
             output_classifier = block(output_classifier)
             classifier_layers_outputs.append(output_classifier)
 
-        #print(domain_features.max(), domain_features.min())
         reversed_features = blocks.GradientReversalLayer.apply(domain_features, dann_config.GRADIENT_REVERSAL_LAYER_ALPHA)
         output_domain = self.domain_classifier(reversed_features)
 
