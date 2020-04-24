@@ -51,10 +51,9 @@ class Trainer:
             opt_kwargs = dict()
 
         if opt == 'adam':
-            opt = torch.optim.Adam(self.model.parameters(), lr=0.0001, **opt_kwargs)
+            opt = torch.optim.Adam(self.model.parameters(), **opt_kwargs)
         else:
             raise NotImplementedError
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=0.95)
 
         if validation_data is not None:
             src_val_data, trg_val_data = validation_data
@@ -96,7 +95,6 @@ class Trainer:
             if callbacks is not None:
                 for callback in callbacks:
                     callback(self.model, self.last_epoch_history, self.epoch, n_epochs)
-            scheduler.step()
 
     def score(self, data, metrics):
         for metric in metrics:
