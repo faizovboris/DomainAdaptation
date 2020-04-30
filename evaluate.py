@@ -3,7 +3,7 @@ import torch
 
 from trainer import Trainer
 from models import DANNModel
-from data_loader import create_data_generators
+from dataloader import create_data_generators
 from metrics import AccuracyScoreFromLogits
 import configs.dann_config as dann_config
 
@@ -15,11 +15,12 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    _, _, test_gen_t = create_data_generators(dann_config.DATASET,
+    test_gen_t, _, _ = create_data_generators(dann_config.DATASET,
                                               dann_config.TARGET_DOMAIN,
                                               batch_size=dann_config.BATCH_SIZE,
-                                              infinite_train=True,
+                                              infinite_train=False,
                                               image_size=dann_config.IMAGE_SIZE,
+                                              split_ratios=[1, 0, 0],
                                               num_workers=dann_config.NUM_WORKERS,
                                               device=device)
     model = DANNModel().to(device)
