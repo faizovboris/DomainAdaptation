@@ -40,10 +40,12 @@ class print_callback:
 
 
 class ModelSaver:
-    def __init__(self, model_type, save_freq=1, path="checkpoints"):
+    def __init__(self, model_type, save_freq=1, path="checkpoints", save_best_model=False):
         self.model_type = model_type
         self.path = path
         self.save_freq = save_freq
+        self.save_best_model = save_best_model
+        self.best_val_loss = None
         if not os.path.exists(path):
             os.makedirs(path)
         if not os.path.exists(os.path.join(path, model_type)):
@@ -53,6 +55,10 @@ class ModelSaver:
         import torch
         if current_epoch % self.save_freq == 0:
             filename = os.path.join(self.path, self.model_type, "epoch_{}.pt".format(current_epoch))
+            torch.save(model.state_dict(), filename)
+        if self.save_best_model and (self.best_val_loss is None or self.best_val_loss > epoch_log['val_loss']):
+            self.best_val_loss = epoch_log['val_loss']
+            filename = os.path.join(self.path, self.model_type, "best_model.pt")
             torch.save(model.state_dict(), filename)
 
 
