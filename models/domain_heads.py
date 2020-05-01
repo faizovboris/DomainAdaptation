@@ -15,11 +15,11 @@ def get_domain_head(domain_input_len):
 def vanilla_dann_domain_head(domain_input_len):
     return nn.Sequential(
         nn.Linear(domain_input_len, 1024),
-        nn.BatchNorm1d(1024),
         nn.ReLU(),
+        nn.Dropout(0.5),
         nn.Linear(1024, 1024),
-        nn.BatchNorm1d(1024),
         nn.ReLU(),
+        nn.Dropout(0.5),
         nn.Linear(1024, 1),
     )
 
