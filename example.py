@@ -48,7 +48,7 @@ if __name__ == '__main__':
            lr_scheduler=scheduler,
            callbacks=[print_callback(watch=["loss", "domain_loss", "val_loss",
                                             "val_domain_loss", 'trg_metrics', 'src_metrics']),
-                      ModelSaver('DANN', dann_config.SAVE_MODEL_FREQ, save_best_model=True),
+                      ModelSaver('DANN', dann_config.SAVE_MODEL_FREQ),
                       WandbCallback(),
                       HistorySaver('log_with_sgd', dann_config.VAL_FREQ,
                                    extra_losses={'domain_loss': ['domain_loss', 'val_domain_loss'],
