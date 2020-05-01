@@ -37,3 +37,7 @@ TARGET_DOMAIN = "webcam"
 # DATASET = "mnist"
 # SOURCE_DOMAIN = "mnist"
 # TARGET_DOMAIN = "mnist-m"
+
+assert (MODEL_BACKBONE == "alexnet" or \
+        (MODEL_BACKBONE != "alexnet" and not NEED_ADAPTATION_BLOCK and BLOCKS_WITH_SMALLER_LR == 0)), \
+       "can't use adaptation block with non-alexnet"
