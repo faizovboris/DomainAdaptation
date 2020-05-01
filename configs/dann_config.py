@@ -25,7 +25,7 @@ BLOCKS_WITH_SMALLER_LR = 2 # ="2" only for alexnet, ="0" for other types
 IMAGE_SIZE = 224
 DATASET = "office-31"
 SOURCE_DOMAIN = "amazon"
-TARGET_DOMAIN = "dslr"
+TARGET_DOMAIN = "webcam"
 
 # CLASSES_CNT = 10
 # MODEL_BACKBONE = "mnist_dann"
