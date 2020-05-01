@@ -56,8 +56,7 @@ class DANNModel(BaseModel):
         for i in range(self.classifier_before_domain_cnt, len(self.class_classifier)):
             output_classifier = self.class_classifier[i](output_classifier)
             classifier_layers_outputs.append(output_classifier)
-        #output_classifier = self.class_classifier[self.classifier_before_domain_cnt](output_classifier)
-
+        
         output_domain = self.domain_classifier(reversed_features)
 
         output = {
