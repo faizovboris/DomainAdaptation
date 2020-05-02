@@ -12,7 +12,7 @@ NUM_WORKERS = 4
 N_EPOCHS = 200
 STEPS_PER_EPOCH = 20
 VAL_FREQ = 1
-SAVE_MODEL_FREQ = 200
+SAVE_MODEL_FREQ = 199
 
 ################### Model dependent parameters #########################
 
