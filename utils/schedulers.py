@@ -10,5 +10,5 @@ class LRSchedulerSGD:
         mu_p = self.mu_0 / ((1 + self.alpha * p) ** self.beta)
         for param_group in opt.param_groups[:self.blocks_with_smaller_lr]:
             param_group['lr'] = 0.1 * mu_p
-        for param_group in opt.param_groups[2:]:
+        for param_group in opt.param_groups[self.blocks_with_smaller_lr:]:
             param_group['lr'] = mu_p
